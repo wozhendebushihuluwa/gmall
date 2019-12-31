@@ -1,3 +1,7 @@
+.deal/
+target/
+
+
 # Compiled class file
 *.class
 
