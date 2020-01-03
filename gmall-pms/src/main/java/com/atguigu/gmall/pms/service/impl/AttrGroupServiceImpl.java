@@ -33,6 +33,8 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     private AttrAttrgroupRelationDao attrgroupRelationDao;
     @Autowired
     private AttrDao attrDao;
+    @Autowired
+    private AttrGroupDao attrGroupDao;
     @Override
     public PageVo queryPage(QueryCondition params) {
         IPage<AttrGroupEntity> page = this.page(
@@ -57,17 +59,17 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     public GroupVo queryGroupVoByCid(Long gid) {
         GroupVo groupVo = new GroupVo();
         //根据gid查询组
-        AttrGroupEntity groupEntity = this.getById(gid);
+        AttrGroupEntity groupEntity = this.attrGroupDao.selectById(gid);
         BeanUtils.copyProperties(groupEntity,groupVo);
         //查询中间表
         List<AttrAttrgroupRelationEntity> relationEntites = this.attrgroupRelationDao.selectList(new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_group_id", gid));
-        groupVo.setRelations(relationEntites);
         //判断中间表是否为空
         if(CollectionUtils.isEmpty(relationEntites)){
           return groupVo;
         }
+        groupVo.setRelations(relationEntites);
         //获取所有规格参数的id
-        List<Long> attrIds = relationEntites.stream().map(AttrAttrgroupRelationEntity::getAttrGroupId).collect(Collectors.toList());
+        List<Long> attrIds = relationEntites.stream().map(relation -> relation.getAttrId()).collect(Collectors.toList());
         //查询规格参数
         List<AttrEntity> attrEntities = this.attrDao.selectBatchIds(attrIds);
         groupVo.setAttrEntities(attrEntities);
@@ -75,3 +77,26 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

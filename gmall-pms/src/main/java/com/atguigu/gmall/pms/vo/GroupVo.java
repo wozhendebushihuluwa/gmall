@@ -10,5 +10,6 @@ import java.util.List;
 @Data
 public class GroupVo extends AttrGroupEntity {
     private List<AttrEntity> attrEntities;
+
     private List<AttrAttrgroupRelationEntity> relations;
 }
