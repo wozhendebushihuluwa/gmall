@@ -7,6 +7,20 @@
     <artifactId>gmall</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>谷粒商城</description>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <version>2.2.2.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
     <packaging>pom</packaging>
 
     <modules>
