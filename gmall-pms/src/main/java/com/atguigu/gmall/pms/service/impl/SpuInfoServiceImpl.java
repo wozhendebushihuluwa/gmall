@@ -4,9 +4,7 @@ package com.atguigu.gmall.pms.service.impl;
 import com.atguigu.gmall.pms.dao.*;
 import com.atguigu.gmall.pms.entity.*;
 import com.atguigu.gmall.pms.feign.GmallSmsClient;
-import com.atguigu.gmall.pms.service.ProductAttrValueService;
-import com.atguigu.gmall.pms.service.SkuImagesService;
-import com.atguigu.gmall.pms.service.SkuSaleAttrValueService;
+import com.atguigu.gmall.pms.service.*;
 import com.atguigu.gmall.pms.vo.BaseAttrValueVo;
 import com.atguigu.gmall.pms.vo.SkuInfoVo;
 import com.atguigu.gmall.pms.vo.SpuInfoVo;
@@ -16,9 +14,12 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -28,7 +29,8 @@ import com.atguigu.core.bean.PageVo;
 import com.atguigu.core.bean.Query;
 import com.atguigu.core.bean.QueryCondition;
 
-import com.atguigu.gmall.pms.service.SpuInfoService;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 
@@ -46,6 +48,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     private SkuSaleAttrValueService saleAttrValueService;
     @Autowired
     private GmallSmsClient gmallSmsClient;
+    @Autowired
+    private SpuInfoDescService spuInfoDescService;
     @Override
     public PageVo queryPage(QueryCondition params) {
         IPage<SpuInfoEntity> page = this.page(
@@ -72,37 +76,32 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         );
         return new PageVo(page);
     }
-
+//    @Transactional(rollbackFor = FileNotFoundException.class,noRollbackFor = ArithmeticException.class)
+//    @Transactional(timeout = 3)
+//    @Transactional(readOnly = true)
+    @Transactional
     @Override
-    public void bigSave(SpuInfoVo spuInfoVo) {
+    public void bigSave(SpuInfoVo spuInfoVo) throws FileNotFoundException {
      //1.保存spu相关信息
      //1.1 spuInfo
-     spuInfoVo.setCreateTime(new Date());
-     spuInfoVo.setUodateTime(spuInfoVo.getCreateTime());
-     this.save(spuInfoVo);
-     Long spuId= spuInfoVo.getId();
-     //1.2spuInfoDesc
-        List<String> spuImages = spuInfoVo.getSpuImages();
-        if(!CollectionUtils.isEmpty(spuImages)){
-            SpuInfoDescEntity descEntity = new SpuInfoDescEntity();
-            descEntity.setSpuId(spuId);
-            descEntity.setDecript(StringUtils.join(spuImages,","));
-            this.descDao.insert(descEntity);
-        }
-     //1.3基础属性相关信息
-        List<BaseAttrValueVo> baseAttrs = spuInfoVo.getBaseAttrs();
-        if(!CollectionUtils.isEmpty(baseAttrs)){
-            List<ProductAttrValueEntity> attrValues = baseAttrs.stream().map(baseAttrValueVo -> {
-                ProductAttrValueEntity attrValueEntity = new ProductAttrValueEntity();
-                BeanUtils.copyProperties(baseAttrValueVo, attrValueEntity);
-                attrValueEntity.setSpuId(spuId);
-                attrValueEntity.setAttrSort(0);
-                attrValueEntity.setQuickShow(0);
-                return attrValueEntity;
-            }).collect(Collectors.toList());
-            this.attrValueService.saveBatch(attrValues);
-        }
-     //2.sku相关信息
+        Long spuId = saveSpuInfo(spuInfoVo);
+        //1.2spuInfoDesc
+        this.spuInfoDescService.saveSpuDesc(spuInfoVo, spuId);
+
+/*        try {
+            TimeUnit.SECONDS.sleep(4);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
+        //1.3基础属性相关信息
+        saveBaseAttrValue(spuInfoVo, spuId);
+        //2.sku相关信息
+        saveSkuAndSales(spuInfoVo, spuId);
+//        FileInputStream inputStream = new FileInputStream("xxxxxx");
+//        int i=1/0;
+    }
+
+    private void saveSkuAndSales(SpuInfoVo spuInfoVo, Long spuId) {
         List<SkuInfoVo> skus = spuInfoVo.getSkus();
         if(CollectionUtils.isEmpty(skus)){
             return ;
@@ -149,21 +148,28 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             saleVo.setSkuId(skuId);
             this.gmallSmsClient.saveSales(saleVo);
         });
+    }
 
+    private void saveBaseAttrValue(SpuInfoVo spuInfoVo, Long spuId) {
+        List<BaseAttrValueVo> baseAttrs = spuInfoVo.getBaseAttrs();
+        if(!CollectionUtils.isEmpty(baseAttrs)){
+            List<ProductAttrValueEntity> attrValues = baseAttrs.stream().map(baseAttrValueVo -> {
+                ProductAttrValueEntity attrValueEntity = new ProductAttrValueEntity();
+                BeanUtils.copyProperties(baseAttrValueVo, attrValueEntity);
+                attrValueEntity.setSpuId(spuId);
+                attrValueEntity.setAttrSort(0);
+                attrValueEntity.setQuickShow(0);
+                return attrValueEntity;
+            }).collect(Collectors.toList());
+            this.attrValueService.saveBatch(attrValues);
+        }
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    private Long saveSpuInfo(SpuInfoVo spuInfoVo) {
+        spuInfoVo.setCreateTime(new Date());
+        spuInfoVo.setUodateTime(spuInfoVo.getCreateTime());
+        this.save(spuInfoVo);
+        return spuInfoVo.getId();
     }
 
 }
