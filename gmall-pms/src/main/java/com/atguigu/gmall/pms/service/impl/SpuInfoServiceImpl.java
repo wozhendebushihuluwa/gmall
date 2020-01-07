@@ -9,6 +9,7 @@ import com.atguigu.gmall.pms.vo.BaseAttrValueVo;
 import com.atguigu.gmall.pms.vo.SkuInfoVo;
 import com.atguigu.gmall.pms.vo.SpuInfoVo;
 import com.atguigu.gmall.sms.vo.SaleVo;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 //    @Transactional(rollbackFor = FileNotFoundException.class,noRollbackFor = ArithmeticException.class)
 //    @Transactional(timeout = 3)
 //    @Transactional(readOnly = true)
-    @Transactional
+    @GlobalTransactional
     @Override
     public void bigSave(SpuInfoVo spuInfoVo) throws FileNotFoundException {
      //1.保存spu相关信息
@@ -98,7 +99,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         //2.sku相关信息
         saveSkuAndSales(spuInfoVo, spuId);
 //        FileInputStream inputStream = new FileInputStream("xxxxxx");
-//        int i=1/0;
+          int i=1/0;
     }
 
     private void saveSkuAndSales(SpuInfoVo spuInfoVo, Long spuId) {
