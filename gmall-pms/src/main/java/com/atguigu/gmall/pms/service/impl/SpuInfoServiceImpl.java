@@ -1,7 +1,12 @@
 package com.atguigu.gmall.pms.service.impl;
 
 
-import com.atguigu.gmall.pms.dao.*;
+import com.atguigu.core.bean.PageVo;
+import com.atguigu.core.bean.Query;
+import com.atguigu.core.bean.QueryCondition;
+import com.atguigu.gmall.pms.dao.SkuInfoDao;
+import com.atguigu.gmall.pms.dao.SpuInfoDao;
+import com.atguigu.gmall.pms.dao.SpuInfoDescDao;
 import com.atguigu.gmall.pms.entity.*;
 import com.atguigu.gmall.pms.feign.GmallSmsClient;
 import com.atguigu.gmall.pms.service.*;
@@ -9,30 +14,21 @@ import com.atguigu.gmall.pms.vo.BaseAttrValueVo;
 import com.atguigu.gmall.pms.vo.SkuInfoVo;
 import com.atguigu.gmall.pms.vo.SpuInfoVo;
 import com.atguigu.gmall.sms.vo.SaleVo;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.atguigu.core.bean.PageVo;
-import com.atguigu.core.bean.Query;
-import com.atguigu.core.bean.QueryCondition;
-
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 
 @Service("spuInfoService")
@@ -88,7 +84,6 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         Long spuId = saveSpuInfo(spuInfoVo);
         //1.2spuInfoDesc
         this.spuInfoDescService.saveSpuDesc(spuInfoVo, spuId);
-
 /*        try {
             TimeUnit.SECONDS.sleep(4);
         } catch (InterruptedException e) {
@@ -99,7 +94,6 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         //2.sku相关信息
         saveSkuAndSales(spuInfoVo, spuId);
 //        FileInputStream inputStream = new FileInputStream("xxxxxx");
-          int i=1/0;
     }
 
     private void saveSkuAndSales(SpuInfoVo spuInfoVo, Long spuId) {

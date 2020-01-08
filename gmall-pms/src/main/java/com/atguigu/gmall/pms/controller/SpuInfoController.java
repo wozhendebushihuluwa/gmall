@@ -1,26 +1,23 @@
 package com.atguigu.gmall.pms.controller;
 
-import java.io.FileNotFoundException;
-import java.util.Arrays;
-import java.util.Map;
-
-
 import com.atguigu.core.bean.PageVo;
+import com.atguigu.core.bean.Query;
 import com.atguigu.core.bean.QueryCondition;
 import com.atguigu.core.bean.Resp;
+import com.atguigu.gmall.pms.entity.SpuInfoEntity;
+import com.atguigu.gmall.pms.service.SpuInfoService;
 import com.atguigu.gmall.pms.vo.SpuInfoVo;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import net.bytebuddy.implementation.bytecode.constant.DefaultValue;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.atguigu.gmall.pms.entity.SpuInfoEntity;
-import com.atguigu.gmall.pms.service.SpuInfoService;
-
-
+import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -42,6 +39,16 @@ public class SpuInfoController {
                                           @RequestParam(value = "catId",defaultValue = "0")Long catId){
         PageVo pageVo=this.spuInfoService.querySpuByCidOrKey(condition,catId);
         return Resp.ok(pageVo);
+    }
+
+
+
+
+    @PostMapping("page")
+    public Resp<List<SpuInfoEntity>> querySpuByPage(@RequestBody QueryCondition condition){
+        IPage<SpuInfoEntity> page = this.spuInfoService.page(new Query<SpuInfoEntity>().getPage(condition), new QueryWrapper<SpuInfoEntity>().eq("publish_status", 1));
+
+        return Resp.ok(page.getRecords());
     }
     /**
      * 列表
