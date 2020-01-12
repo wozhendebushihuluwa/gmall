@@ -56,7 +56,6 @@ class GmallSearchApplicationTests {
                 if(!CollectionUtils.isEmpty(skuInfoEntities)){
                     List<Goods> goodsList = skuInfoEntities.stream().map(skuInfoEntity -> {
                         Goods goods = new Goods();
-
                         //查询库存信息
                         Resp<List<WareSkuEntity>> wareSkuResp = this.gmallWmsClient.queryWareSkuBySkuId(skuInfoEntity.getSkuId());
                         List<WareSkuEntity> wareSkuEntities = wareSkuResp.getData();

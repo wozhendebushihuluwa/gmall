@@ -1,21 +1,19 @@
 package com.atguigu.gmall.pms.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-
 import com.atguigu.core.bean.PageVo;
 import com.atguigu.core.bean.QueryCondition;
 import com.atguigu.core.bean.Resp;
+import com.atguigu.gmall.pms.entity.CategoryEntity;
+import com.atguigu.gmall.pms.service.CategoryService;
+import com.atguigu.gmall.pms.vo.categoryVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import com.atguigu.gmall.pms.entity.CategoryEntity;
-import com.atguigu.gmall.pms.service.CategoryService;
+import java.util.Arrays;
+import java.util.List;
 
 
 
@@ -33,6 +31,12 @@ import com.atguigu.gmall.pms.service.CategoryService;
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;
+
+    @GetMapping("{pid}")
+    public Resp<List<categoryVo>>  queryCategoryWithSub(@PathVariable("pid")Long pid){
+        List<categoryVo> categoryVos=this.categoryService.queryCategoryWithSub(pid);
+        return Resp.ok(categoryVos);
+    }
 
 
     @GetMapping
