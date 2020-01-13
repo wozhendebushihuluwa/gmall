@@ -28,4 +28,34 @@ public class IndexController {
         List<categoryVo> categoryVos=this.indexService.queryCategorysWithSub(pid);
         return Resp.ok(categoryVos);
     }
+
+    @GetMapping("lock")
+    public Resp<Object> testLock(){
+        this.indexService.testLock();
+        return Resp.ok(null);
+    }
+
+    @GetMapping("read")
+    public Resp<String> readLock(){
+        String s=this.indexService.readLock();
+        return Resp.ok(s);
+    }
+
+    @GetMapping("write")
+    public Resp<String> writeLock(){
+        String s=this.indexService.writeLock();
+        return Resp.ok(s);
+    }
+
+    @GetMapping("latch")
+    public Resp<String> latchLock(){
+        String s=this.indexService.latchLock();
+        return Resp.ok(s);
+    }
+
+    @GetMapping("countdown")
+    public Resp<String> countdownLock() throws InterruptedException {
+        String s=this.indexService.countdownLock();
+        return Resp.ok(s);
+    }
 }
