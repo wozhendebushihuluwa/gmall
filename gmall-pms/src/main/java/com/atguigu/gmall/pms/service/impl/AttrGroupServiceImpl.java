@@ -1,30 +1,29 @@
 package com.atguigu.gmall.pms.service.impl;
 
-import com.atguigu.gmall.pms.dao.AttrAttrgroupRelationDao;
-import com.atguigu.gmall.pms.dao.AttrDao;
-import com.atguigu.gmall.pms.entity.AttrAttrgroupRelationEntity;
-import com.atguigu.gmall.pms.entity.AttrEntity;
-import com.atguigu.gmall.pms.vo.GroupVo;
-import com.fasterxml.jackson.databind.util.BeanUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.atguigu.core.bean.PageVo;
 import com.atguigu.core.bean.Query;
 import com.atguigu.core.bean.QueryCondition;
-
+import com.atguigu.gmall.pms.dao.AttrAttrgroupRelationDao;
+import com.atguigu.gmall.pms.dao.AttrDao;
 import com.atguigu.gmall.pms.dao.AttrGroupDao;
+import com.atguigu.gmall.pms.dao.ProductAttrValueDao;
+import com.atguigu.gmall.pms.entity.AttrAttrgroupRelationEntity;
+import com.atguigu.gmall.pms.entity.AttrEntity;
 import com.atguigu.gmall.pms.entity.AttrGroupEntity;
+import com.atguigu.gmall.pms.entity.ProductAttrValueEntity;
 import com.atguigu.gmall.pms.service.AttrGroupService;
+import com.atguigu.gmall.pms.vo.GroupVo;
+import com.atguigu.gmall.pms.vo.ItemGroupVo;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service("attrGroupService")
@@ -35,6 +34,8 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     private AttrDao attrDao;
     @Autowired
     private AttrGroupDao attrGroupDao;
+    @Autowired
+    private ProductAttrValueDao productAttrValueDao;
     @Override
     public PageVo queryPage(QueryCondition params) {
         IPage<AttrGroupEntity> page = this.page(
@@ -84,6 +85,30 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
         return groupEntities.stream().map(attrGroupEntity -> this.queryGroupVoByCid(attrGroupEntity.getAttrGroupId())).collect(Collectors.toList());
         //查询每个组在的规格参数
 
+    }
+
+    @Override
+    public List<ItemGroupVo> queryItemGroupVosByCidAndSpuId(Long cid, Long spuId) {
+        //1.根据sku中的categoryid查询分组
+        List<AttrGroupEntity> groupEntities = this.list(new QueryWrapper<AttrGroupEntity>().eq("catelog_id", cid));
+        if(CollectionUtils.isEmpty(groupEntities)){
+            return null;
+        }
+        return groupEntities.stream().map(group->{
+            ItemGroupVo itemGroupVo = new ItemGroupVo();
+            itemGroupVo.setId(group.getAttrGroupId());
+            itemGroupVo.setName(group.getAttrGroupName());
+            //2.遍历组到中间表查询每个组的规格参数id
+            List<AttrAttrgroupRelationEntity> attrgroupRelationEntities = this.attrgroupRelationDao.selectList(new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_group_id", group.getAttrGroupId()));
+            if(!CollectionUtils.isEmpty(attrgroupRelationEntities)){
+                List<Long> attrIds = attrgroupRelationEntities.stream().map(AttrAttrgroupRelationEntity::getAttrGroupId).collect(Collectors.toList());
+
+                //3.根据spuid和attrid查询规格参数名及值
+                List<ProductAttrValueEntity> attrValueEntities = this.productAttrValueDao.selectList(new QueryWrapper<ProductAttrValueEntity>().eq("spu_id", spuId).in("attr_id", attrIds));
+                itemGroupVo.setBaseAttrValues(attrValueEntities);
+            }
+            return itemGroupVo;
+        }).collect(Collectors.toList());
     }
 
 }
