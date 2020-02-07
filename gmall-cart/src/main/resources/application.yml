@@ -6,10 +6,10 @@ spring:
       discovery:
         server-addr: 127.0.0.1:8848
   redis:
-    host: 192.168.88.129
+    host: 192.168.78.129
 jwt:
   token:
-    pubKeyPath: D:\My_Code\rsa\rsa.pub
+    pubKeyPath: D:\MY_Codes\rsa\rsa.pub
     cookieName: gmall-token
     expireTime: 7776000
     userKey: user-key

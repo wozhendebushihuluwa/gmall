@@ -36,6 +36,6 @@ spring:
 
 jwt:
   token:
-    pubKeyPath: D:\My_Code\rsa\rsa.pub
+    pubKeyPath: D:\MY_Codes\rsa\rsa.pub
     cookieName: gmall-token
     expireTime: 30
