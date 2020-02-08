@@ -13,7 +13,7 @@ public class OrderComfirmVO {
 
     private List<OrderItemVO> orderItems;
 
-    private Long bounds;//积分信息
+    private Integer bounds;//积分信息
 
     private String orderToken;//防止重复提交
 

@@ -208,4 +208,14 @@ public class CartService {
            hashOps.delete(skuId.toString());
         }
     }
+
+    public List<Cart> queryCheckedCarts(Long userId) {
+        BoundHashOperations<String, Object, Object> hashOps = this.stringRedisTemplate.boundHashOps(KEY_PREFIX + userId);
+        List<Object> cartsJson = hashOps.values();
+        if(!CollectionUtils.isEmpty(cartsJson)){
+            return cartsJson.stream().map(cartJson -> JSON.parseObject(cartJson.toString(), Cart.class)).filter(cart -> cart.getCheck()).collect(Collectors.toList());
+        }
+        return null;
+
+    }
 }

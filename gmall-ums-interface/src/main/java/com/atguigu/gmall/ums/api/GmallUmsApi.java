@@ -16,4 +16,7 @@ public interface GmallUmsApi {
 
     @GetMapping("ums/memberreceiveaddress/{userId}")
     public Resp<List<MemberReceiveAddressEntity>> queryAddressesByUserId(@PathVariable("userId")Long userId);
+
+    @GetMapping("ums/member/info/{id}")
+    public Resp<MemberEntity> queryMemberById(@PathVariable("id") Long id);
 }

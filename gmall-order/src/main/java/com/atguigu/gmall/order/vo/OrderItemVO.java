@@ -17,4 +17,5 @@ public class OrderItemVO {
     private Integer count;
     private Boolean store=false; //库存
     private List<ItemSaleVo> sales;   //促销信息
+    private BigDecimal weight;
 }
