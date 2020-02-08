@@ -1,9 +1,9 @@
-package com.atguigu.gmall.cart.interceptor;
+package com.atguigu.gmall.order.interceptor;
 
+import com.atguigu.core.bean.UserInfo;
 import com.atguigu.core.utils.CookieUtils;
 import com.atguigu.core.utils.JwtUtils;
-import com.atguigu.gmall.cart.config.JwtProperties;
-import com.atguigu.core.bean.UserInfo;
+import com.atguigu.gmall.order.config.JwtProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
-import java.util.UUID;
 
 @Component
 @EnableConfigurationProperties({JwtProperties.class})
@@ -28,19 +27,13 @@ public class LoginInterceptor implements HandlerInterceptor {
 
         UserInfo userInfo = new UserInfo();
         String token = CookieUtils.getCookieValue(request, this.jwtProperties.getCookieName());
-        String userKey = CookieUtils.getCookieValue(request, this.jwtProperties.getUserKey());
-        if(StringUtils.isEmpty(userKey)){
-          userKey= UUID.randomUUID().toString();
-          CookieUtils.setCookie(request,response,this.jwtProperties.getUserKey(),userKey,this.jwtProperties.getExpireTime());
-        }
-        userInfo.setUserKey(userKey);
 
         if(StringUtils.isEmpty(token)){
 //            request.setAttribute("userKey",userKey);
-            THREAD_LOCAL.set(userInfo);
-            return true;
+//            THREAD_LOCAL.set(userInfo);
+            return false;
         }
-
+        //存在token信息
         try {
             Map<String, Object> infoFromToken = JwtUtils.getInfoFromToken(token, this.jwtProperties.getPublicKey());
             Long id =Long.valueOf(infoFromToken.get("id").toString());
