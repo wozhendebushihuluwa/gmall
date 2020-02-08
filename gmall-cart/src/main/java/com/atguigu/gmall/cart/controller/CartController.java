@@ -34,4 +34,22 @@ public class CartController {
         List<Cart> carts =  this.cartService.queryCarts();
         return Resp.ok(carts);
     }
+
+    @PostMapping("update")
+    public Resp<Object> updateNum(@RequestBody Cart cart){
+        this.cartService.updateNum(cart);
+        return Resp.ok(null);
+    }
+
+    @PostMapping("check")
+    public Resp<Object> check(@RequestBody Cart cart){
+        this.cartService.check(cart);
+        return Resp.ok(null);
+    }
+
+    @PostMapping("delete")
+    public Resp<Object> delete(Long skuId){
+        this.cartService.delete(skuId);
+        return Resp.ok(null);
+    }
 }

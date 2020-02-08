@@ -14,6 +14,7 @@ public class Cart {
     private String image;
     private List<SkuSaleAttrValueEntity> saleAttrs;  //销售属性
     private BigDecimal price;
+    private BigDecimal currentPrice;
     private Integer count;
     private Boolean store=false; //库存
     private Boolean check; //选中状态
