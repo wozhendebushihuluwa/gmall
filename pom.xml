@@ -31,6 +31,7 @@
         <module>gmall-wms-interface</module>
         <module>gmall-ums-interface</module>
         <module>gamll-order-interface</module>
+        <module>gmall-oms-interface</module>
     </modules>
 
 </project>

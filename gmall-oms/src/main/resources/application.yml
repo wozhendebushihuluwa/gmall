@@ -1,0 +1,6 @@
+spring:
+  rabbitmq:
+    host:  192.168.78.129
+    virtual-host: /
+    username: zhx
+    password: zhx

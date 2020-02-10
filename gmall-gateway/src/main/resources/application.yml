@@ -4,10 +4,10 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: pms-route
-          uri: lb://pms-service
+        - id: wms-route
+          uri: lb://wms-service
           predicates:
-            - Path=/pms/**
+            - Path=/wms/**
         - id: wms-route
           uri: lb://wms-service
           predicates:
@@ -31,16 +31,15 @@ spring:
           filters:
             - RewritePath=/api(?<segment>/?.*), $\{segment}
         - id: order-route
-            uri: lb://order-service
-            predicates:
-              - Path=/api/order/**
-            filters:
-              - RewritePath=/api(?<segment>/?.*), $\{segment}
-              - Auth
+          uri: lb://order-service
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - RewritePath=/api(?<segment>/?.*), $\{segment}
+            - Auth
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
-
 jwt:
   token:
     pubKeyPath: D:\MY_Codes\rsa\rsa.pub
