@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,8 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private AmqpTemplate amqpTemplate;
 
     private static final String KEY_PREFIX="wms:stock:";
     @Override
@@ -70,7 +73,8 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         // 把库存的锁定信息保存到redis中，方便获取锁定库存的信息
         String orderToken = skuLockVOS.get(0).getOrderToken();
         this.redisTemplate.opsForValue().set(KEY_PREFIX + orderToken, JSON.toJSONString(skuLockVOS));
-
+        //定时释放库存  定时时间 （35min）>关单时间（30min）
+        this.amqpTemplate.convertAndSend("ORDER-EXCHANGE","wms.ttl",orderToken);
         return null;
     }
 

@@ -197,7 +197,7 @@ public class OrderService {
         if (!CollectionUtils.isEmpty(lockVOS)) {
             throw new OrderException(JSON.toJSONString(lockVOS));
         }
-        //异常：后续订单无法创建，定时释放库存
+        //异常（服务器宕机）：后续订单无法创建，定时释放库存
 
 
         //4.新增订单（订单状态，未付款的状态）

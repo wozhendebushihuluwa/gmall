@@ -28,7 +28,7 @@ public class StockListener {
     @RabbitListener(bindings = @QueueBinding(
             value = @Queue(value = "STOCK-UNLOCK-QUEUE",durable = "true"),
             exchange = @Exchange(value = "ORDER-EXCHANGE",ignoreDeclarationExceptions = "true",type = ExchangeTypes.TOPIC),
-            key = {"stock.unlock"}
+            key = {"stock.unlock","wms.dead"}
     ))
     public void unlock(String orderToken){
         String json = this.redisTemplate.opsForValue().get(KEY_PREFIX + orderToken);
@@ -39,8 +39,13 @@ public class StockListener {
         List<SkuLockVO> skuLockVOS = JSON.parseArray(json, SkuLockVO.class);
         skuLockVOS.forEach(skuLockVO -> {
            this.wareSkuDao.unLock(skuLockVO.getWareSkuId(),skuLockVO.getCount());
+            this.redisTemplate.delete(KEY_PREFIX+orderToken);
         });
 
     }
 
+//    @RabbitListener(queues = {"WMS-DEAD-QUEUE"})
+//    public void testListener(String msg){
+//        System.out.println("消费者拿到死信消息"+msg);
+//    }
 }
