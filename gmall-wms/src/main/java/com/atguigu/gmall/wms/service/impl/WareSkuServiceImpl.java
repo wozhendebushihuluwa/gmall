@@ -1,5 +1,6 @@
 package com.atguigu.gmall.wms.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.atguigu.core.bean.PageVo;
 import com.atguigu.core.bean.Query;
 import com.atguigu.core.bean.QueryCondition;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,6 +30,10 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
     @Autowired
     private WareSkuDao wareSkuDao;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    private static final String KEY_PREFIX="wms:stock:";
     @Override
     public PageVo queryPage(QueryCondition params) {
         IPage<WareSkuEntity> page = this.page(
@@ -62,8 +68,8 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             return skuLockVOS;
         }
         // 把库存的锁定信息保存到redis中，方便获取锁定库存的信息
-//        String orderToken = skuLockVOS.get(0).getOrderToken();
-//        this.redisTemplate.opsForValue().set(KEY_PREFIX + orderToken, JSON.toJSONString(skuLockVOS));
+        String orderToken = skuLockVOS.get(0).getOrderToken();
+        this.redisTemplate.opsForValue().set(KEY_PREFIX + orderToken, JSON.toJSONString(skuLockVOS));
 
         return null;
     }

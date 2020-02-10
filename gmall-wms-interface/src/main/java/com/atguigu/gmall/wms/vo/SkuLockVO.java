@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class SkuLockVO {
 
+    private String orderToken;
+
     private Long skuId;
 
     private Integer count;

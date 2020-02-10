@@ -21,6 +21,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Date;
@@ -43,7 +44,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
         return new PageVo(page);
     }
-
+    @Transactional
     @Override
     public OrderEntity saveOrder(OrderSubmitVO orderSubmitVO, Long userId) {
         //新增主表（订单表oms_order）
@@ -105,6 +106,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
                });
            }
        }
+
+       int i=1/0;
         return orderEntity;
     }
 

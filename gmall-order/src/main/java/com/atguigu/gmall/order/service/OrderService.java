@@ -17,6 +17,8 @@ import com.atguigu.gmall.ums.entity.MemberReceiveAddressEntity;
 import com.atguigu.gmall.wms.entity.WareSkuEntity;
 import com.atguigu.gmall.wms.vo.SkuLockVO;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -25,7 +27,9 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +54,8 @@ public class OrderService {
     private GmallOmsClient gmallOmsClient;
     @Autowired
     private ThreadPoolExecutor threadPoolExecutor;
+    @Autowired
+    private AmqpTemplate amqpTemplate;
 
     private static final String TOKEN_PREFIX="order:token:";
 
@@ -183,7 +189,7 @@ public class OrderService {
             SkuLockVO skuLockVO = new SkuLockVO();
             skuLockVO.setSkuId(orderItemVO.getSkuId());
             skuLockVO.setCount(orderItemVO.getCount());
-//            skuLockVO.setOrderToken(orderSubmitVO.getOrderToken());
+            skuLockVO.setOrderToken(orderSubmitVO.getOrderToken());
             return skuLockVO;
         }).collect(Collectors.toList());
         Resp<List<SkuLockVO>> skuLockResp = this.gmallWmsClient.checkAndLock(skuLockVOS);
@@ -191,30 +197,30 @@ public class OrderService {
         if (!CollectionUtils.isEmpty(lockVOS)) {
             throw new OrderException(JSON.toJSONString(lockVOS));
         }
+        //异常：后续订单无法创建，定时释放库存
+
+
         //4.新增订单（订单状态，未付款的状态）
         UserInfo userInfo = LoginInterceptor.getUserInfo();
         try {
             this.gmallOmsClient.saveOrder(orderSubmitVO, userInfo.getUserId());
         } catch (Exception e) {
             e.printStackTrace();
+            //订单创建异常应该立马释放内存  feign(阻塞) 消息队列（异步）
+            this.amqpTemplate.convertAndSend("ORDER-EXCHANGE","stock.unlock",orderSubmitVO.getOrderToken());
             throw new OrderException("订单保存失败，服务错误");
         }
-
         //5.删除购物车中的相关记录
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        try {
+            Map<String,Object> map=new HashMap<>();
+            map.put("userId",userInfo.getUserId());
+            List<Long> skuIds = items.stream().map(orderItemVO -> orderItemVO.getSkuId()).collect(Collectors.toList());
+            map.put("skuIds",skuIds);
+            this.amqpTemplate.convertAndSend("ORDER-EXCHANGE","cart.delete",map);
+        } catch (AmqpException e) {
+            e.printStackTrace();
+            throw new OrderException("");
+        }
 
 
     }
