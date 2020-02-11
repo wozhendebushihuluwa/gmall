@@ -44,6 +44,28 @@ public class StockListener {
 
     }
 
+    @RabbitListener(bindings = @QueueBinding(
+            value = @Queue(value = "STOCK-MINUS-QUEUE",durable = "true"),
+            exchange = @Exchange(value = "ORDER-EXCHANGE",ignoreDeclarationExceptions = "true",type = ExchangeTypes.TOPIC),
+            key = {"stock.minus"}
+    ))
+    public void minus(String orderToken){
+       //获取库存锁定信息
+        String json = this.redisTemplate.opsForValue().get(KEY_PREFIX + orderToken);
+        if(StringUtils.isEmpty(json)){
+            return;
+        }
+        //反序列化锁定库存信息
+        List<SkuLockVO> skuLockVOS = JSON.parseArray(json, SkuLockVO.class);
+        skuLockVOS.forEach(skuLockVO -> {
+            this.wareSkuDao.minus(skuLockVO.getWareSkuId(),skuLockVO.getCount());
+
+            this.redisTemplate.delete(KEY_PREFIX+orderToken);
+        });
+
+    }
+
+
 //    @RabbitListener(queues = {"WMS-DEAD-QUEUE"})
 //    public void testListener(String msg){
 //        System.out.println("消费者拿到死信消息"+msg);

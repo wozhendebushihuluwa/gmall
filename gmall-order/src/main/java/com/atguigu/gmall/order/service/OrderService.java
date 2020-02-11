@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.atguigu.core.bean.Resp;
 import com.atguigu.core.bean.UserInfo;
 import com.atguigu.core.exception.OrderException;
+import com.atguigu.gmall.oms.entity.OrderEntity;
 import com.atguigu.gmall.oms.vo.OrderItemVO;
 import com.atguigu.gmall.oms.vo.OrderSubmitVO;
 import com.atguigu.gmall.order.feign.*;
@@ -149,7 +150,7 @@ public class OrderService {
         return orderComfirmVO;
     }
 
-    public void submit(OrderSubmitVO orderSubmitVO) {
+    public OrderEntity submit(OrderSubmitVO orderSubmitVO) {
 
         //1.检验是否重复提交（是：提示；否：跳转到支付页面，创建订单）
         //判断redis中有没有，有-说明第一次提交，放行并删除redis中的orderToken
@@ -202,8 +203,10 @@ public class OrderService {
 
         //4.新增订单（订单状态，未付款的状态）
         UserInfo userInfo = LoginInterceptor.getUserInfo();
+        OrderEntity orderEntity=null;
         try {
-            this.gmallOmsClient.saveOrder(orderSubmitVO, userInfo.getUserId());
+            Resp<OrderEntity> orderEntityResp = this.gmallOmsClient.saveOrder(orderSubmitVO, userInfo.getUserId());
+             orderEntity = orderEntityResp.getData();
         } catch (Exception e) {
             e.printStackTrace();
             //订单创建异常应该立马释放内存  feign(阻塞) 消息队列（异步）
@@ -222,6 +225,6 @@ public class OrderService {
             throw new OrderException("");
         }
 
-
+        return orderEntity;
     }
 }

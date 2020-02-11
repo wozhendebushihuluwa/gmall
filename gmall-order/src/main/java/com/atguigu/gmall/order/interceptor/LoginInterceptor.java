@@ -7,7 +7,6 @@ import com.atguigu.gmall.order.config.JwtProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,11 +27,11 @@ public class LoginInterceptor implements HandlerInterceptor {
         UserInfo userInfo = new UserInfo();
         String token = CookieUtils.getCookieValue(request, this.jwtProperties.getCookieName());
 
-        if(StringUtils.isEmpty(token)){
-//            request.setAttribute("userKey",userKey);
-//            THREAD_LOCAL.set(userInfo);
-            return false;
-        }
+//        if(StringUtils.isEmpty(token)){
+////            request.setAttribute("userKey",userKey);
+////            THREAD_LOCAL.set(userInfo);
+//            return false;
+//        }
         //存在token信息
         try {
             Map<String, Object> infoFromToken = JwtUtils.getInfoFromToken(token, this.jwtProperties.getPublicKey());
